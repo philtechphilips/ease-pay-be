@@ -6,7 +6,7 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { User } from './entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { hashPassword } from 'src/utils/base';
+import { hashPassword, validatePassword } from 'src/utils/base';
 
 const fakeUsers = [
   {
@@ -25,11 +25,13 @@ const fakeUsers = [
 export class AuthService {
   constructor(private jwtService: JwtService, @InjectRepository(User) private readonly userRepository: Repository<User>,) { }
 
-  validateUser({ username, password }: CreateAuthDto) {
-    const findUser = fakeUsers.find((user) => user.username === username);
+  async validateUser({ username, password }: CreateAuthDto) {
+    const findUser = await this.userRepository.findOne({ where: {username }})
 
     if (!findUser) throw new HttpException("Invalid credentials!", 400);
-    if (password === findUser.password) {
+    const decryptPassword = await validatePassword(password, findUser.password)
+  
+    if (decryptPassword) {
       const { password, ...user } = findUser;
       return this.jwtService.sign(user);
     }
