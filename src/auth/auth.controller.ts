@@ -22,7 +22,7 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async create(@Body() registerDto: RegisterAuthDto) {
     try {
-      const user = await this.authService.create(registerDto);
+      const {password, ...user} = await this.authService.create(registerDto);
       return { success: true, data: user, message: 'Account created successfully!' };
     } catch (error) {
       if(error.status === 400){

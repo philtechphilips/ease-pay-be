@@ -6,6 +6,7 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { User } from './entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { hashPassword } from 'src/utils/base';
 
 const fakeUsers = [
   {
@@ -45,8 +46,11 @@ export class AuthService {
       } else if (existingUsername) {
         throw new BadRequestException('Username taken by another user!');
       }
+      const password = await hashPassword(user.password)
+      user.password = password;
       return await this.userRepository.save(user);
     } catch (error) {
+      console.log(error)
       throw error;
     }
   }
