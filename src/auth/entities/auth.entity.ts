@@ -7,37 +7,26 @@ export class User {
     id: number;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     full_name: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     username: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
+    password: string;
+
+    @Column()
     email: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     phone: string;
 
     @Column({ default: 'user' }) 
-    @IsString()
-    @IsNotEmpty()
     role: string;
 
     @CreateDateColumn({ name: 'created_at' })
-    @IsString()
-    @IsNotEmpty()
     createdAt: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    @IsString()
-    @IsNotEmpty()
     updatedAt: Date;
 }

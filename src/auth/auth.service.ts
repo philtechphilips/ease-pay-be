@@ -1,7 +1,11 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { RegisterAuthDto } from './dto/register-auth.dto';
+import { User } from './entities/auth.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 const fakeUsers = [
   {
@@ -18,19 +22,33 @@ const fakeUsers = [
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService){}
-  validateUser({username, password}: CreateAuthDto) {
+  constructor(private jwtService: JwtService, @InjectRepository(User) private readonly userRepository: Repository<User>,) { }
+
+  validateUser({ username, password }: CreateAuthDto) {
     const findUser = fakeUsers.find((user) => user.username === username);
 
-    if(!findUser) throw new HttpException("Invalid credentials!", 400);
-    if(password === findUser.password){
-      const {password, ...user} = findUser;
+    if (!findUser) throw new HttpException("Invalid credentials!", 400);
+    if (password === findUser.password) {
+      const { password, ...user } = findUser;
       return this.jwtService.sign(user);
     }
   }
 
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  async create(registerDto: RegisterAuthDto) {
+    try {
+      const user = await this.userRepository.create(registerDto);
+      const existingEmail = await this.userRepository.findOne({ where: { email: registerDto.email } });
+      const existingUsername = await this.userRepository.findOne({ where: { username: registerDto.username } });
+
+      if (existingEmail) {
+        throw new BadRequestException('Account with this email exist!');
+      } else if (existingUsername) {
+        throw new BadRequestException('Username taken by another user!');
+      }
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw error;
+    }
   }
 
   findAll() {

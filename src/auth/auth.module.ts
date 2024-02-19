@@ -5,6 +5,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategies';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './entities/auth.entity';
 
 @Module({
   imports: [
@@ -12,7 +14,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtModule.register({
       secret: "ease-pay-secret",
       signOptions: { expiresIn: "30d" } 
-    })
+    }),
+    TypeOrmModule.forFeature([User])
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
